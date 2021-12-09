@@ -6,9 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-sns.set_style("darkgrid")
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
-#%matplotlib inline
+
 
 
 ##TASK 1
@@ -18,7 +20,7 @@ df = pd.read_csv('telco.csv')
 num_cols = []
 categorical_cols = []
 
-def sort_cols(data):
+def sort_columns(data,num_cols,categorical_cols):
 
 
     for i in data.columns:
@@ -26,47 +28,45 @@ def sort_cols(data):
             categorical_cols.append(i)
         else :
             num_cols.append(i)
+    return num_cols, categorical_cols
 
-sort_cols(df)
 
-def fix_cat_cols(data,cat_columns):
+def fix_missing_values(data,cat_columns,num_cols):
     for i in cat_columns:
         data[i] = data[i].fillna(data[i].mode()[0])
-
-
-fix_cat_cols(df,categorical_cols)
-
-def fix_num_cols(data,num_columns):
     for i in num_columns:
         data[i] = data[i].fillna(data[i].mean())
+    return df.isnull().sum()
 
-fix_num_cols(df,num_cols)
-
-Df = df
-
-from sklearn.preprocessing import MinMaxScaler
-col_names = ["IMSI", "MSISDN/Number","IMEI","Bearer Id","Dur. (ms)"]
-
-def scale(data):
-    scaler = MinMaxScaler(feature_range=(5, 10))
+def min_max_scale(data,col_names,x,y):
+    scaler = MinMaxScaler(feature_range=(x, y))
     data[col_names] = scaler.fit_transform(data[col_names])
+    return df.head(5)
+def standard_scale(data,col_names):
+    scaler = StandardScaler()
+    data[col_names] = scaler.fit_transform(data[col_names])
+    return df.head(5)
 
-def bytes_scale(data,substring,conv,replace_str):
+def scale_manual(data,substring,conv,replace_str,div_value):
     conv = [j for j in data.columns if substring in j]
     for i in  conv :
-        data[i.replace(replace_str,substring)] = data[i]/1000000
+        data[i.replace(replace_str,substring)] = data[i]/div_value
         data.drop(i, axis = 1, inplace = True)
+    return df.head()
 
 ## TASK 1.1
 
-def group_count(data,x,y):
-    x+'_per_'+y = data.groupby([x]).agg({y:'count'})
+def single_cols_groupby(data,x,y,z):
+    z = data.groupby([x]).agg({y:'count'})
+    return z
 
-def group_sum(data,x,y):
-    x+'_per_'+y = data.groupby([x]).agg({y:'sum'})
+def group_sum(data,x,y,z):
+    z = data.groupby([x]).agg({y:'sum'})
+    return z
 
 def group_double_sum(data,x,y,z):
-    x+y+'_per_'+z = data.groupby([x,y]).agg({z:'count'})
+    z = data.groupby([x,y]).agg({z:'count'})
+    return z
 
 ## TASK 1.2
 
@@ -86,14 +86,14 @@ def non_grahical_EDA(data,relevant_num,relevant_cat):
         print(df[cols].describe(include=['O']))
 
 
-def univariate_graph_num_EDA(data,relevant_num):
+def univariate_graphical(data,relevant_num):
     for cols in relevant_num:
         sns.histplot(data=data, x= cols )
         sns.boxplot(data=data, x= cols )
         sns.kdeplot(data=data, x= cols )
         plt.show()
 
-def bivariate_graph_num_EDA(data,relevant_app,x):
+def bivariate_graphical(data,relevant_app,x):
     for i in relevant_app:
         sns.scatterplot(data=data,x=x,y=i,alpha=0.5)
         plt.title(f'graph of {i} against {x}')
@@ -134,7 +134,7 @@ def variable_transformation(data,x,y,newl):
 
     top_5s.drop("index",axis=1,inplace=True)
 
-def new_corr(data):
+def new_corr(data,X,Y):
     df_data = pd.DataFrame()
 
     df_data['Social Media data'] = data['Social Media DL (MB)'] + data['Social Media UL (MB)']
@@ -146,18 +146,13 @@ def new_corr(data):
     df_data['Other data'] = data['Other DL (MB)'] + data['Other UL (MB)']
 
     df_data.corr()
-
-def standard_scale(data):
-    from sklearn.preprocessing import StandardScaler
-    data.drop(categorical_cols, axis=1, inplace=True)
-    data = StandardScaler().fit_transform(data)
-
-
-def PCA(data,principalDf):
-    from sklearn.decomposition import PCA
+def PCA(data,principalDf,principal_1,principal_2):
+    
     pca = PCA(n_components=2)
     principalComponents = pca.fit_transform(data)
-    principalDf = pd.DataFrame(data= principalComponents,columns = ['principal component 1', 'principal component 2'])
+    principalDf = pd.DataFrame(data= principalComponents,columns = [principal_1, principal_2])
+    return principalDf
+    
 
     
 
