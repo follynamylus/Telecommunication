@@ -4,6 +4,9 @@ import streamlit as st
 import plotly.express as ex
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+import pickle
+
+
 st.header('TELCO ANALYSIS')
 df = pd.read_csv('telco.csv')
 print(df)
@@ -58,3 +61,30 @@ df['Other data'] = df['Other DL (Bytes)'] + df['Other UL (Bytes)']
 top_3_apps = ["Gaming data","Other data","Youtube data"]
 for i in top_3_apps:
     st.write(ex.scatter(df, x='MSISDN/Number',y=i))
+
+model = pickle.load(open('model_pkl_1','rb'))
+
+
+session_frequency = float(st.text_input('input session frequency',3))
+Avg_RTT_UL = float(st.text_input('Avg_RTT_UL (ms)',20))
+Avg_RTT_DL = float(st.text_input('Avg_RTT_DL (ms)', 50))
+Avg_BearerTP_UL = float(st.text_input('Avg_BearerTP_UL (kbps)', 200))
+Avg_BearerTP_DL = float(st.text_input('Avg_BearerTP_DL (kbps)', 1200))
+TCP_Retrans_vol_UL = float(st.text_input('TCP_Retrans_vol_UL (Bytes)',150000 ))
+TCP_Retrans_vol_DL = float(st.text_input('TCP_Retrans_vol_DL (Bytes)',500000))
+Total_UL = float(st.text_input('Total_UL (Bytes)', 2000000))
+Total_DL = float(st.text_input('Total_DL (Bytes)', 5000000))
+Dur_ms = float(st.text_input('Dur. (ms)',150000))
+
+Avg_RTT = Avg_RTT_UL + Avg_RTT_DL
+Avg_BearerTP = Avg_BearerTP_UL + Avg_BearerTP_DL
+TCP_Retrans_vol = TCP_Retrans_vol_UL + TCP_Retrans_vol_DL
+Total_Data = Total_UL + Total_DL
+
+scaler = StandardScaler()
+
+scaled = [[session_frequency,Avg_RTT,Avg_BearerTP,TCP_Retrans_vol,Total_Data,Dur_ms]]
+
+X = scaler.fit_transform(scaled)
+
+st.write(f'The predicted satisfactory score is : {model.predict(X)}')
