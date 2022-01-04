@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import plotly.express as ex
+import plotly.figure_factory as ff
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import pickle
@@ -46,6 +47,22 @@ df['Netflix data'] = df['Netflix DL (Bytes)'] + df['Netflix UL (Bytes)']
 df['Gaming data'] = df['Gaming DL (Bytes)'] + df['Gaming UL (Bytes)']
 df['Other data'] = df['Other DL (Bytes)'] + df['Other UL (Bytes)']
 top_3_apps = ["Gaming data","Other data","Youtube data"]
+
+
+
+df['Total_volume (Bytes)'] = df['Total DL (Bytes)'] + df['Total UL (Bytes)']
+relevant_cols = ['Bearer Id','Dur. (ms)','Other data','Gaming data','Youtube data','Netflix data',
+                'Email data','Google data','Social Media data','Total UL (Bytes)','Total DL (Bytes)']
+
+## Univariate EDA for Numerical
+for i in top_3_apps :
+    st.write(ex.histogram(df,i,color = i,marginal = 'box' ))
+
+##plots for scaled applications against total data volume
+
+##for i in relevant_cols :
+    ##st.write(ex.scatter(df, x='Total_volume (Bytes)',y=i , color= i, title= f'Scaled {i} against Total_volume (Bytes)'))
+
 
 ## plots for top 3 most used applications
 for i in top_3_apps:
